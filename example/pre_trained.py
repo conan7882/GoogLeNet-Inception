@@ -61,9 +61,9 @@ if __name__ == '__main__':
                 batch_data = test_data.next_batch()
                 im = batch_data[0]
                 im = resize_image_with_smallest_side(im, 224)
-                im = center_crop_image(im, 224, 224)
-                scipy.misc.imsave('{}test_{}.png'.format(conf.SAVE_DIR, k),
-                                  np.squeeze(im))
+                # im = center_crop_image(im, 224, 224)
+                # scipy.misc.imsave('{}test_{}.png'.format(conf.SAVE_DIR, k),
+                #                   np.squeeze(im))
                 result = sess.run(test_op, feed_dict={image: im})
                 for val, ind in zip(result.values, result.indices):
                     print(val)
