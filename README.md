@@ -19,6 +19,10 @@
 - Since the there is a [Global average pooling](https://arxiv.org/abs/1312.4400) layer before fully connected layer, the input image can be arbitrary size. But the performance is worse when I feed the network using the original image size.
 
 ## Results
+result of VGG19 for the same images can be found [here](https://github.com/conan7882/VGG-tensorflow#results). 
+
+**Note that for VGG19, images are not cropped, the prediction is the averaged prediction over all 224x224 patches of the rescaled images through a global average pooling layer.** 
+
 - ### Image classification on ImageNet
 <div align='left'>
   <img src='fig/1.png' height='300px'>
