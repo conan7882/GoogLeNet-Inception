@@ -19,7 +19,7 @@
 
 
 ## Results
-result of VGG19 for the same images can be found [here](https://github.com/conan7882/VGG-tensorflow#results). 
+Results of VGG19 for the same images can be found [here](https://github.com/conan7882/VGG-tensorflow#results). 
 
 **The pre-processing of images for both experiments are the same.** 
 
