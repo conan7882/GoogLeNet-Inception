@@ -25,6 +25,7 @@
   <img src='fig/2.png' height="300px">
   <img src='fig/3.png' height="300px">
 </div>
+
 - ### Images from my photo collection
 <div align='left'>
   <img src='fig/4.png' height='350px'>
