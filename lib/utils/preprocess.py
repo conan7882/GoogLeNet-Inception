@@ -21,7 +21,8 @@ def resize_image_with_smallest_side(image, small_size):
     """
     im_shape = image.shape
     shape_dim = len(im_shape)
-    assert shape_dim <=4 and shape_dim >= 2, 'Wrong format of image!Shape is {}'.format(im_shape)
+    assert shape_dim <= 4 and shape_dim >= 2,\
+        'Wrong format of image!Shape is {}'.format(im_shape)
 
     if shape_dim == 4:
         image = np.squeeze(image, axis=0)
@@ -48,17 +49,20 @@ def resize_image_with_smallest_side(image, small_size):
 
     return im
 
+
 def center_crop_image(image, crop_height, crop_width):
     im_shape = image.shape
     shape_dim = len(im_shape)
-    assert shape_dim <=4 and shape_dim >= 2, 'Wrong format of image!'
+    assert shape_dim <= 4 and shape_dim >= 2, 'Wrong format of image!'
 
     if shape_dim == 4:
         height = im_shape[1]
         width = im_shape[2]
-        im = image[:, (height - crop_height)//2:(height + crop_height)//2, (width - crop_width)//2:(width + crop_width)//2]
+        im = image[:, (height - crop_height)//2:(height + crop_height)//2,
+                   (width - crop_width)//2:(width + crop_width)//2]
     else:
         height = im_shape[0]
         width = im_shape[1]
-        im = image[(height - crop_height)//2:(height + crop_height)//2, (width - crop_width)//2:(width + crop_width)//2]
+        im = image[(height - crop_height)//2:(height + crop_height)//2,
+                   (width - crop_width)//2:(width + crop_width)//2]
     return im

@@ -3,19 +3,10 @@
 # File: inception.py
 # Author: Qian Ge <geqian1001@gmail.com>
 
-import numpy as np
+import tensorflow as tf
 from tensorflow.contrib.framework import add_arg_scope
 
-from tensorcv.models.layers import *
-
-# PATH = '/Users/gq/workspace/Dataset/pretrained/googlenet.npy'
-
-# data_dict = np.load(PATH, encoding='latin1').item()
-# print(data_dict)
-# for key in data_dict:
-#     print(key)
-#     # for subkey in data_dict[key]:
-#     #     print(subkey)
+from tensorcv.models.layers import conv, max_pool
 
 
 @add_arg_scope
@@ -41,7 +32,9 @@ def inception_layer(inputs,
                               '{}_5x5_reduce'.format(name))
         conv_55 = conv(conv_55_reduce, 5, conv_55_size, '{}_5x5'.format(name))
 
-        pool = max_pool(inputs, '{}_pool'.format(name), stride=1, padding='SAME', filter_size=3)
+        pool = max_pool(inputs, '{}_pool'.format(name), stride=1,
+                        padding='SAME', filter_size=3)
         convpool = conv(pool, 1, pool_size, '{}_pool_proj'.format(name))
 
-    return tf.concat([conv_11, conv_33, conv_55, convpool], 3, name='{}_concat'.format(name))
+    return tf.concat([conv_11, conv_33, conv_55, convpool],
+                     3, name='{}_concat'.format(name))

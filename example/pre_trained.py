@@ -17,11 +17,11 @@ from utils.classes import get_word_list
 
 def display_data(dataflow, data_name):
     try:
-        print('[{}] num of samples {}, num of classes {}'.\
-            format(data_name, dataflow.size(), len(dataflow.label_dict)))
+        print('[{}] num of samples {}, num of classes {}'.
+              format(data_name, dataflow.size(), len(dataflow.label_dict)))
     except AttributeError:
-        print('[{}] num of samples {}'.\
-            format(data_name, dataflow.size()))
+        print('[{}] num of samples {}'.
+              format(data_name, dataflow.size()))
     print(dataflow._im_list)
 
 
@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     model.create_model([image, 1])
     test_op = tf.nn.top_k(tf.nn.softmax(model.layer['output']),
-                             k=5, sorted=True)
+                          k=5, sorted=True)
     input_op = model.layer['input']
 
     writer = tf.summary.FileWriter(SAVE_DIR)
@@ -55,7 +55,8 @@ if __name__ == '__main__':
                 im = batch_data[0]
                 im = resize_image_with_smallest_side(im, 224)
                 im = center_crop_image(im, 224, 224)
-                scipy.misc.imsave('{}test_{}.png'.format(SAVE_DIR, k), np.squeeze(im))
+                scipy.misc.imsave('{}test_{}.png'.format(SAVE_DIR, k),
+                                  np.squeeze(im))
                 result = sess.run(test_op, feed_dict={image: im})
                 for val, ind in zip(result.values, result.indices):
                     print(val)

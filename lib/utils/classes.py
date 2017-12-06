@@ -5,6 +5,7 @@
 
 import os
 
+
 def get_word_list(file_path):
     word_dict = {}
     word_file = open(os.path.join(file_path), 'r')
