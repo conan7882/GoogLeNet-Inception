@@ -5,3 +5,7 @@
 
 import sys
 sys.path.append('../lib/')
+
+SAVE_DIR = 'E:/tmp/cnn/'
+PARA_DIR = 'E:/GITHUB/workspace/CNN/pretrained/googlenet.npy'
+DATA_DIR = '../data/'

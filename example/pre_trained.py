@@ -6,10 +6,11 @@
 import tensorflow as tf
 import numpy as np
 import scipy.misc
+import argparse
 
 from tensorcv.dataflow.image import ImageFromFile
 
-import setup_env
+import setup_env as conf
 from models.googlenet import GoogleNet
 from utils.preprocess import resize_image_with_smallest_side, center_crop_image
 from utils.classes import get_word_list
@@ -25,15 +26,21 @@ def display_data(dataflow, data_name):
     print(dataflow._im_list)
 
 
-if __name__ == '__main__':
-    SAVE_DIR = 'E:/tmp/cnn/'
-    PARA_DIR = 'E:/GITHUB/workspace/CNN/pretrained/googlenet.npy'
-    DATA_DIR = '../data/'
+def get_args():
+    parser = argparse.ArgumentParser()
 
-    model = GoogleNet(is_load=True, pre_train_path=PARA_DIR)
+    parser.add_argument('--type', default='.jpg', type=str,
+                        help='image file extension')
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
+    FLAGS = get_args()
+
+    model = GoogleNet(is_load=True, pre_train_path=conf.PARA_DIR)
 
     image = tf.placeholder(tf.float32, shape=[None, None, None, 3])
-    test_data = ImageFromFile('.jpeg', data_dir=DATA_DIR, num_channel=3)
+    test_data = ImageFromFile(FLAGS.type, data_dir=conf.DATA_DIR, num_channel=3)
     display_data(test_data, 'test_data')
 
     word_dict = get_word_list('../data/imageNetLabel.txt')
@@ -43,7 +50,7 @@ if __name__ == '__main__':
                           k=5, sorted=True)
     input_op = model.layer['input']
 
-    writer = tf.summary.FileWriter(SAVE_DIR)
+    writer = tf.summary.FileWriter(conf.SAVE_DIR)
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
@@ -55,7 +62,7 @@ if __name__ == '__main__':
                 im = batch_data[0]
                 im = resize_image_with_smallest_side(im, 224)
                 im = center_crop_image(im, 224, 224)
-                scipy.misc.imsave('{}test_{}.png'.format(SAVE_DIR, k),
+                scipy.misc.imsave('{}test_{}.png'.format(conf.SAVE_DIR, k),
                                   np.squeeze(im))
                 result = sess.run(test_op, feed_dict={image: im})
                 for val, ind in zip(result.values, result.indices):
