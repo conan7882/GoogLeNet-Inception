@@ -2,7 +2,8 @@
 
 
 - TensorFlow implementation of [Going Deeper with Convolutions](https://research.google.com/pubs/pub43022.html) (CVPR'15). 
-
+- Architecture of GoogLeNet from the paper:
+![googlenet](fig/arch.png)
 
 ## Requirements
 - Python 3.3+
@@ -18,8 +19,9 @@
 - When testing the pre-trained model, images are rescaled so that the shorter dimension is 224. This is not the same as the original paper which use 144 224x224 crops per image for testing. So the performance will not be as good as the original paper. However, it is easy to add a pre-processing step to obtain the 144 crops and test the classification performance.
 
 
+
 ## Results
-Results of VGG19 for the same images can be found [here](https://github.com/conan7882/VGG-tensorflow#results). 
+result of VGG19 for the same images can be found [here](https://github.com/conan7882/VGG-tensorflow#results). 
 
 **The pre-processing of images for both experiments are the same.** 
 
@@ -54,4 +56,6 @@ python pre_trained.py --type IMAGE_FILE_EXTENSION(.jpg or .png or other types of
 ```
        
    The output are the top-5 class labels and probabilities, and the top-1 human label. The structure of GoogLeNet can be viewed through TensorBoard and the summary file is saved in `setup_env.SAVE_DIR`.
+   
+**Note that the output label is started from 0, so label=l corresponds to the (l+1)th row in [`data/imageNetLabel.txt`](data/imageNetLabel.txt).**
 
