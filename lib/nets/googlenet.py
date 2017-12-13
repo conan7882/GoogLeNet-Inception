@@ -101,16 +101,20 @@ class GoogleNet(BaseModel):
         with arg_scope([conv], trainable=self._trainable,
                        data_dict=data_dict, nl=tf.nn.relu):
             conv1 = conv(inputs, 7, 64, name='conv1_7x7_s2', stride=2)
+            padding1 = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]])
+            conv1_pad = tf.pad(conv1, padding1, 'CONSTANT')
             pool1 = max_pool(
-                conv1, 'pool1', padding='SAME', filter_size=3, stride=2)
+                conv1_pad, 'pool1', padding='VALID', filter_size=3, stride=2)
             pool1_lrn = tf.nn.local_response_normalization(
                 pool1, depth_radius=2, alpha=2e-05, beta=0.75,
                 name='pool1_lrn')
 
             conv2_reduce = conv(pool1_lrn, 1, 64, name='conv2_3x3_reduce')
             conv2 = conv(conv2_reduce, 3, 192, name='conv2_3x3')
+            padding2 = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]])
+            conv2_pad = tf.pad(conv2, padding1, 'CONSTANT')
             pool2 = max_pool(
-                conv2, 'pool2', padding='SAME', filter_size=3, stride=2)
+                conv2_pad, 'pool2', padding='VALID', filter_size=3, stride=2)
             pool2_lrn = tf.nn.local_response_normalization(
                 pool2, depth_radius=2, alpha=2e-05, beta=0.75,
                 name='pool2_lrn')
@@ -175,6 +179,7 @@ class GoogleNet(BaseModel):
 
         fc1 = fc(gap_dropout, 1000, 'loss3_classifier', data_dict=data_dict)
 
+        self.layer['conv_out'] = inception5b
         self.layer['output'] = fc1
         self.layer['class_prob'] = tf.nn.softmax(fc1, name='class_prob')
         self.layer['pre_prob'] = tf.reduce_max(self.layer['class_prob'],

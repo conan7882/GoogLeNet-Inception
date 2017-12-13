@@ -11,7 +11,7 @@ import argparse
 from tensorcv.dataflow.image import ImageFromFile
 
 import setup_env as conf
-from models.googlenet import GoogleNet
+from nets.googlenet import GoogleNet
 from utils.preprocess import resize_image_with_smallest_side, center_crop_image
 from utils.classes import get_word_list
 
@@ -40,7 +40,9 @@ if __name__ == '__main__':
     model = GoogleNet(is_load=True, pre_train_path=conf.PARA_DIR)
 
     image = tf.placeholder(tf.float32, shape=[None, None, None, 3])
-    test_data = ImageFromFile(FLAGS.type, data_dir=conf.DATA_DIR, num_channel=3)
+    test_data = ImageFromFile(FLAGS.type,
+                              data_dir=conf.DATA_DIR,
+                              num_channel=3)
     display_data(test_data, 'test_data')
 
     word_dict = get_word_list('../data/imageNetLabel.txt')

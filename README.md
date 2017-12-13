@@ -16,7 +16,7 @@
 - Inception module is defined in [`lib/models/inception.py`](lib/models/inception.py).
 - An example of image classification using pre-trained model is in [`example/pre_trained.py`](example/pre_trained.py).
 - The pre-trained model on ImageNet can be downloaded [here](http://www.deeplearningmodel.net/).
-- When testing the pre-trained model, images are rescaled so that the shorter dimension is 224. This is not the same as the original paper which use 144 224x224 crops per image for testing. So the performance will not be as good as the original paper. However, it is easy to add a pre-processing step to obtain the 144 crops and test the classification performance.
+- When testing the pre-trained model, images are rescaled so that the shorter dimension is 224. This is not the same as the original paper which is an ensemle of 7 similar models using 144 224x224 crops per image for testing. So the performance will not be as good as the original paper. 
 
 
 
