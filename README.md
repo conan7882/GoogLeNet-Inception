@@ -12,7 +12,7 @@
 
 ## Implementation Details
 
-- The GoogLeNet model is defined in [`lib/models/googlenet.py`](lib/models/googlenet.py).
+- The GoogLeNet model is defined in [`lib/nets/googlenet.py`](lib/nets/googlenet.py).
 - Inception module is defined in [`lib/models/inception.py`](lib/models/inception.py).
 - An example of image classification using pre-trained model is in [`example/pre_trained.py`](example/pre_trained.py).
 - The pre-trained model on ImageNet can be downloaded [here](http://www.deeplearningmodel.net/).
