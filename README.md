@@ -40,7 +40,7 @@ result of VGG19 for the same images can be found [here](https://github.com/conan
 
 ## Usage
 ### Download pre-trained model
-Download the pre-trained parameters [here](http://www.deeplearningmodel.net/).
+Download the pre-trained parameters [here](https://www.dropbox.com/sh/axnbpd1oe92aoyd/AADpmuFIJTtxS7zkL_LZrROLa?dl=0). This is original from [here](http://www.deeplearningmodel.net/).
 ### Config path
 All directories are setup in [`example/setup_env.py`](example/setup_env.py).
 
