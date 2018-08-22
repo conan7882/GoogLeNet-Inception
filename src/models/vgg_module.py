@@ -64,7 +64,7 @@ def vgg19_conv(layer_dict, keep_prob, inputs=None, pretrained_dict=None,
         L.conv(filter_size=3, out_dim=512, name='conv5_3')
         L.conv(filter_size=3, out_dim=512, name='conv5_4')
         L.max_pool(layer_dict, name='pool5')
-        L.drop_out(layer_dict, is_training, keep_prob=keep_prob)
+        # L.drop_out(layer_dict, is_training, keep_prob=keep_prob)
 
         return layer_dict['cur_input']
 

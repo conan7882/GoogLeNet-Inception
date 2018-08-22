@@ -52,7 +52,7 @@ class Trainer(object):
     def train_epoch(self, sess, keep_prob=1., summary_writer=None):
         if self.epoch_id < 50:
             self._lr = self._init_lr
-        elif self.epoch_id < 100:
+        elif self.epoch_id < 70:
             self._lr = self._init_lr / 10.
         else:
             self._lr = self._init_lr / 100.
@@ -123,7 +123,6 @@ class Trainer(object):
             loss_sum += loss
             acc_sum += acc
 
-
         print('[Valid]: ', end='')
         display(self.global_step,
                 step,
@@ -132,52 +131,3 @@ class Trainer(object):
                 'valid',
                 summary_val=cur_summary,
                 summary_writer=summary_writer)
-
-
-    # def valid_epoch(self, sess, dataflow=None, moniter_generation=False, summary_writer=None):
-    #     # self._g_model.set_is_training(True)
-    #     # display_name_list = ['loss']
-    #     # cur_summary = None
-        
-    #     dataflow.setup(epoch_val=0, batch_size=dataflow.batch_size)
-    #     display_name_list = ['loss']
-
-    #     step = 0
-    #     loss_sum = 0
-    #     while dataflow.epochs_completed == 0:
-    #         step += 1
-
-    #         batch_data = dataflow.next_batch_dict()
-    #         im = batch_data['im']
-    #         label = batch_data['label']
-    #         loss, valid_summary = sess.run(
-    #             [self._loss_op, self._valid_summary_op],
-    #             feed_dict={self._t_model.encoder_in: im,
-    #                        self._t_model.image: im,
-    #                        self._t_model.keep_prob: 1.0,
-    #                        self._t_model.label: label,
-    #                        })
-    #         loss_sum += loss
-
-    #     print('[Valid]: ', end='')
-    #     display(self.global_step,
-    #             step,
-    #             [loss_sum],
-    #             display_name_list,
-    #             'valid',
-    #             summary_val=None,
-    #             summary_writer=summary_writer)
-    #     dataflow.setup(epoch_val=0, batch_size=dataflow.batch_size)
-
-    #     gen_im = sess.run(self._generate_op)
-    #     if moniter_generation and self._save_path:
-    #         im_save_path = os.path.join(self._save_path,
-    #                                     'generate_step_{}.png'.format(self.global_step))
-    #         viz.viz_batch_im(batch_im=gen_im, grid_size=[10, 10],
-    #                          save_path=im_save_path, gap=0, gap_color=0,
-    #                          shuffle=False)
-    #     if summary_writer:
-    #         cur_summary = sess.run(self._generate_summary_op)
-    #         summary_writer.add_summary(cur_summary, self.global_step)
-    #         summary_writer.add_summary(valid_summary, self.global_step)
-

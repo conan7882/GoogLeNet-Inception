@@ -367,10 +367,10 @@ def drop_out(layer_dict, is_training, inputs=None, keep_prob=0.5):
         layer_dict['cur_input'] = inputs
     return layer_dict['cur_input']
 
-def global_avg_pool(x, name='global_avg_pool', data_format='NHWC'):
+def global_avg_pool(x, name='global_avg_pool', data_format='NHWC', keepdims=None):
     assert x.shape.ndims == 4
     assert data_format in ['NHWC', 'NCHW']
     with tf.name_scope(name):
         axis = [1, 2] if data_format == 'NHWC' else [2, 3]
-        return tf.reduce_mean(x, axis)
+        return tf.reduce_mean(x, axis, keepdims=keepdims)
 

@@ -167,10 +167,10 @@ class CIFAR(DataFlow):
         if self._augment:
             self._augment_flow.fit(batch_image)
             batch_image, batch_label = self._augment_flow.flow(batch_image, batch_label, batch_size=self._batch_size)[0]
-        # if self._substract:
-        #     batch_image = self.substract_channel_mean(batch_image)
+        if self._substract:
+            batch_image = self.substract_channel_mean(batch_image)
         # batch_image = batch_image.astype('float32')
-        batch_image = batch_image / 255. * 2. - 1.
+        # batch_image = batch_image / 255. * 2. - 1.
         return batch_image.astype('float32'), batch_label
 
     def next_batch_dict(self):
