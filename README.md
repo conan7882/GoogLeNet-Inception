@@ -36,7 +36,7 @@ python inception_pretrained.py --im_name PART-OF-IMAGE-NAME
 ## Results
 ### Image classification using pre-trained model
 - Top five predictions are shown. The probabilities are shown keeping two decimal places. Note that the pre-trained model are trained on [ImageNet](http://www.image-net.org/).
-- result of VGG19 for the same images can be found [here](https://github.com/conan7882/VGG-tensorflow#results). 
+- Result of VGG19 for the same images can be found [here](https://github.com/conan7882/VGG-tensorflow#results). 
 **The pre-processing of images for both experiments are the same.** 
 
 *Data Source* | *Image* | *Result* |
