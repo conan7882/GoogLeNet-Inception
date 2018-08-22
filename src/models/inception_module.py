@@ -61,19 +61,6 @@ def inception_layer(conv_11_size, conv_33_reduce_size, conv_33_size,
         convpool = L.conv(filter_size=1, out_dim=pool_size,
                           name='{}_pool_proj'.format(name))
 
-        # conv_11 = conv(inputs, 1, conv_11_size, '{}_1x1'.format(name))
-
-        # conv_33_reduce = conv(inputs, 1, conv_33_reduce_size,
-        #                       '{}_3x3_reduce'.format(name))
-        # conv_33 = conv(conv_33_reduce, 3, conv_33_size, '{}_3x3'.format(name))
-
-        # conv_55_reduce = conv(inputs, 1, conv_55_reduce_size,
-        #                       '{}_5x5_reduce'.format(name))
-        # conv_55 = conv(conv_55_reduce, 5, conv_55_size, '{}_5x5'.format(name))
-
-        # pool = max_pool(inputs, '{}_pool'.format(name), stride=1,
-        #                 padding='SAME', filter_size=3)
-        # convpool = conv(pool, 1, pool_size, '{}_pool_proj'.format(name))
         output = tf.concat([conv_11, conv_33, conv_55, convpool], 3,
                            name='{}_concat'.format(name))
         layer_dict['cur_input'] = output
@@ -143,7 +130,7 @@ def inception_layers(layer_dict, inputs=None, pretrained_dict=None,
 
     return layer_dict['cur_input']
 
-def inception_fc(layer_dict, n_class, keep_prob, inputs=None,
+def inception_fc(layer_dict, n_class, keep_prob=1., inputs=None,
                  pretrained_dict=None, is_training=True,
                  bn=False, init_w=None, trainable=True, wd=0):
 
@@ -161,36 +148,29 @@ def inception_fc(layer_dict, n_class, keep_prob, inputs=None,
 
     return layer_dict['cur_input']
 
+def auxiliary_classifier(layer_dict, n_class, keep_prob=1., inputs=None,
+                         pretrained_dict=None, is_training=True,
+                         bn=False, init_w=None, trainable=True, wd=0):
+    
+    if inputs is not None:
+        layer_dict['cur_input'] = inputs
 
-    # with arg_scope([inception_layer],
-    #                    trainable=self._trainable,
-    #                    data_dict=data_dict):
-    #         # inception3a = inception_layer(
-    #         #     pool2_lrn, 64, 96, 128, 16, 32, 32, name='inception_3a')
-    #         # inception3b = inception_layer(
-    #         #     inception3a, 128, 128, 192, 32, 96, 64, name='inception_3b')
-    #         # pool3 = max_pool(
-    #         #     inception3b, 'pool3', padding='SAME', filter_size=3, stride=2)
+    layer_dict['cur_input'] = tf.layers.average_pooling2d(
+        inputs=layer_dict['cur_input'],
+        pool_size=5, strides=3,
+        padding='valid', name='averagepool')
 
-    #         # inception4a = inception_layer(
-    #         #     pool3, 192, 96, 208, 16, 48, 64, name='inception_4a')
-    #         # inception4b = inception_layer(
-    #         #     inception4a, 160, 112, 224, 24, 64, 64, name='inception_4b')
-    #         # inception4c = inception_layer(
-    #         #     inception4b, 128, 128, 256, 24, 64, 64, name='inception_4c')
-    #         # inception4d = inception_layer(
-    #         #     inception4c, 112, 144, 288, 32, 64, 64, name='inception_4d')
-    #         # inception4e = inception_layer(
-    #         #     inception4d, 256, 160, 320, 32, 128, 128, name='inception_4e')
-    #         # pool4 = max_pool(
-    #         #     inception4e, 'pool4', padding='SAME', filter_size=3, stride=2)
+    arg_scope = tf.contrib.framework.arg_scope
+    with arg_scope([L.conv], layer_dict=layer_dict, pretrained_dict=pretrained_dict,
+                   bn=bn, init_w=init_w, trainable=trainable,
+                   is_training=is_training, wd=wd, add_summary=False):
 
-    #         inception5a = inception_layer(
-    #             pool4, 256, 160, 320, 32, 128, 128, name='inception_5a')
-    #         inception5b = inception_layer(
-    #             inception5a, 384, 192, 384, 48, 128, 128, name='inception_5b')
-
-
-
-
+        L.conv(1, 128, name='conv', stride=1, nl=tf.nn.relu)
+        L.conv(4, 1024, name='fc_1', stride=1, padding='VALID')
+        L.drop_out(layer_dict, is_training, keep_prob=keep_prob)
+        L.conv(1, 1024, name='fc_2', stride=1, padding='VALID', nl=tf.nn.relu)
+        L.drop_out(layer_dict, is_training, keep_prob=keep_prob)
+        L.conv(1, n_class, name='classifier', stride=1, padding='VALID')
+        layer_dict['cur_input'] = tf.squeeze(layer_dict['cur_input'], [1, 2])
+    return layer_dict['cur_input']
 

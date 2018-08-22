@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# File: vgg_cifar.py
+# File: inception_cifar.py
 # Author: Qian Ge <geqian1001@gmail.com>
 
 import os
@@ -12,14 +12,15 @@ import tensorflow as tf
 
 sys.path.append('../')
 import loader as loader
-from src.nets.vgg import VGG_CIFAR10
+from src.nets.googlenet import GoogleNet_cifar
 from src.helper.trainer import Trainer
 from src.helper.evaluator import Evaluator
 
 
 DATA_PATH = '/home/qge2/workspace/data/dataset/cifar/'
-SAVE_PATH = '/home/qge2/workspace/data/out/vgg/cifar/final/'
-VGG_PATH = '/home/qge2/workspace/data/pretrain/vgg/vgg19.npy'
+# DATA_PATH = '/Users/gq/workspace/Dataset/cifar-10-batches-py/'
+SAVE_PATH = '/home/qge2/workspace/data/out/googlenet/cifar/'
+PRETRINED_PATH = '/home/qge2/workspace/data/pretrain/inception/googlenet.npy'
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -51,14 +52,14 @@ def train():
 
     pre_trained_path=None
     if FLAGS.finetune:
-        pre_trained_path = VGG_PATH
-    train_model = VGG_CIFAR10(
+        pre_trained_path = PRETRINED_PATH
+    train_model = GoogleNet_cifar(
         n_channel=3, n_class=10, pre_trained_path=pre_trained_path,
-        bn=True, wd=5e-3, trainable=True, sub_vgg_mean=False)
+        bn=True, wd=0, trainable=True, sub_imagenet_mean=False)
     train_model.create_train_model()
 
-    valid_model = VGG_CIFAR10(
-        n_channel=3, n_class=10, bn=True, sub_vgg_mean=False)
+    valid_model = GoogleNet_cifar(
+        n_channel=3, n_class=10, bn=True, sub_imagenet_mean=False)
     valid_model.create_test_model()
 
     trainer = Trainer(train_model, valid_model, train_data, init_lr=FLAGS.lr)
@@ -71,16 +72,16 @@ def train():
         for epoch_id in range(FLAGS.maxepoch):
             trainer.train_epoch(sess, keep_prob=FLAGS.keep_prob, summary_writer=writer)
             trainer.valid_epoch(sess, dataflow=valid_data, summary_writer=writer)
-            saver.save(sess, '{}vgg-cifar-epoch-{}'.format(SAVE_PATH, epoch_id))
-        saver.save(sess, '{}vgg-cifar-epoch-{}'.format(SAVE_PATH, epoch_id))
+        #     saver.save(sess, '{}inception-cifar-epoch-{}'.format(SAVE_PATH, epoch_id))
+        # saver.save(sess, '{}inception-cifar-epoch-{}'.format(SAVE_PATH, epoch_id))
 
 def evaluate():
     FLAGS = get_args()
     train_data, valid_data = loader.load_cifar(
         cifar_path=DATA_PATH, batch_size=FLAGS.bsize, substract_mean=True)
 
-    valid_model = VGG_CIFAR10(
-        n_channel=3, n_class=10, bn=True, sub_vgg_mean=False)
+    valid_model = GoogleNet(
+        n_channel=3, n_class=10, bn=True, sub_imagenet_mean=False)
     valid_model.create_test_model()
 
     evaluator = Evaluator(valid_model)
@@ -88,7 +89,7 @@ def evaluate():
     with tf.Session() as sess:
         saver = tf.train.Saver()
         sess.run(tf.global_variables_initializer())
-        saver.restore(sess, '{}vgg-cifar-epoch-{}'.format(SAVE_PATH, FLAGS.load))
+        saver.restore(sess, '{}inception-cifar-epoch-{}'.format(SAVE_PATH, FLAGS.load))
         print('training set:', end='')
         evaluator.accuracy(sess, train_data)
         print('testing set:', end='')
