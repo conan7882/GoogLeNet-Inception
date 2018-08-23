@@ -1,8 +1,8 @@
 # GoogLeNet for Image Classification
 
 - TensorFlow implementation of [Going Deeper with Convolutions](https://research.google.com/pubs/pub43022.html) (CVPR'15). 
-- **The inception structure**
- - This repository contains the examples of natural image classification using pre-trained model as well as training a Inception network from scratch on [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html) dataset (93.64% accuracy on testing set). The pre-trained model on CIFAR-10 can be download from [here](https://www.dropbox.com/sh/kab0bzpy0zymljx/AAD2YCVm0J1Qmlor8EoPzgQda?dl=0).
+<!-- - **The inception structure** -->
+- This repository contains the examples of natural image classification using pre-trained model as well as training a Inception network from scratch on [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html) dataset (93.64% accuracy on testing set). The pre-trained model on CIFAR-10 can be download from [here](https://www.dropbox.com/sh/kab0bzpy0zymljx/AAD2YCVm0J1Qmlor8EoPzgQda?dl=0).
 - Architecture of GoogLeNet from the paper:
 ![googlenet](fig/arch.png)
 
@@ -21,7 +21,7 @@
 
 For testing the pre-trained model
 - Images are rescaled so that the smallest side equals 224 before fed into the model. This is not the same as the original paper which is an ensemle of 7 similar models using 144 224x224 crops per image for testing. So the performance will not be as good as the original paper. 
-- **LRN**
+<!--- **LRN** -->
 
 For training from scratch on CIFAR-10
 - All the LRN layers are removed from the convolutional layers.
