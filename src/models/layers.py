@@ -107,6 +107,7 @@ def linear(out_dim,
            wd=0,
            bn=False,
            is_training=True,
+           trainable=True,
            name='Linear',
            nl=tf.identity,
            add_summary=False):
@@ -125,13 +126,13 @@ def linear(out_dim,
                                   # dtype=None,
                                   initializer=init_w,
                                   regularizer=regularizer,
-                                  trainable=True)
+                                  trainable=trainable)
         biases = tf.get_variable('biases',
                                   shape=[out_dim],
                                   # dtype=None,
                                   initializer=init_b,
                                   regularizer=None,
-                                  trainable=True)
+                                  trainable=trainable)
 
         if add_summary:
             tf.summary.histogram(

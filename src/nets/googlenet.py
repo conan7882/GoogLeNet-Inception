@@ -13,16 +13,18 @@ import src.models.inception_module as module
 
 INIT_W = tf.keras.initializers.he_normal()
 
-class GoogleNet(BaseModel):
+class GoogLeNet(BaseModel):
     """ base model of GoogleNet for image classification """
 
     def __init__(self, n_channel, n_class, pre_trained_path=None,
-                 bn=False, wd=0, trainable=True, sub_imagenet_mean=True):
+                 bn=False, wd=0, conv_trainable=True, fc_trainable=True,
+                 sub_imagenet_mean=True):
         self._n_channel = n_channel
         self.n_class = n_class
         self._bn = bn
         self._wd = wd
-        self._trainable = trainable
+        self._conv_trainable = conv_trainable
+        self._fc_trainable = fc_trainable
         self._sub_imagenet_mean = sub_imagenet_mean
 
         self._pretrained_dict = None
@@ -89,7 +91,7 @@ class GoogleNet(BaseModel):
             layer_dict=self.layers, inputs=inputs,
             pretrained_dict=self._pretrained_dict,
             bn=self._bn, wd=self._wd, init_w=INIT_W,
-            is_training=self.is_training, trainable=self._trainable)
+            is_training=self.is_training, trainable=self._conv_trainable)
         return conv_out
 
     def _inception_layers(self, inputs):
@@ -97,22 +99,22 @@ class GoogleNet(BaseModel):
             layer_dict=self.layers, inputs=inputs,
             pretrained_dict=self._pretrained_dict,
             bn=self._bn, wd=self._wd, init_w=INIT_W,
-            is_training=self.is_training, trainable=self._trainable)
+            is_training=self.is_training, trainable=self._conv_trainable)
         return inception_out
 
     def _fc_layers(self, inputs):
         fc_out = module.inception_fc(
             layer_dict=self.layers, n_class=self.n_class, keep_prob=self.keep_prob,
             inputs=inputs, pretrained_dict=self._pretrained_dict,
-            bn=self._bn, init_w=INIT_W, trainable=self._trainable,
+            bn=self._bn, init_w=INIT_W, trainable=self._fc_trainable,
             is_training=self.is_training, wd=self._wd)
         return fc_out
 
     def _auxiliary_classifier(self, inputs):
-        logits = auxiliary_classifier(
+        logits = module.auxiliary_classifier(
             layer_dict=self.layers, n_class=self.n_class, keep_prob=self.keep_prob,
             inputs=inputs, pretrained_dict=None, is_training=self.is_training,
-            bn=self._bn, init_w=INIT_W, trainable=self._trainable, wd=self._wd)
+            bn=self._bn, init_w=INIT_W, trainable=self._fc_trainable, wd=self._wd)
         return logits
 
     def _get_loss(self):
@@ -123,8 +125,12 @@ class GoogleNet(BaseModel):
                 labels=labels,
                 logits=logits,
                 name='cross_entropy')
-        auxilarity_loss = self._get_auxiliary_loss(0) + self._get_auxiliary_loss(1)
-        return tf.reduce_mean(cross_entropy) + 0.3 * auxilarity_loss
+            cross_entropy = tf.reduce_mean(cross_entropy)
+        if self.is_training:
+            auxilarity_loss = self._get_auxiliary_loss(0) + self._get_auxiliary_loss(1)
+            return cross_entropy + 0.3 * auxilarity_loss
+        else:
+            return cross_entropy
 
     def _get_auxiliary_loss(self, loss_id):
         with tf.name_scope('auxilarity_loss_{}'.format(loss_id)):
@@ -147,11 +153,21 @@ class GoogleNet(BaseModel):
                 tf.cast(correct_prediction, tf.float32), 
                 name = 'result')
 
-class GoogleNet_cifar(GoogleNet):
+class GoogLeNet_cifar(GoogLeNet):
     def _fc_layers(self, inputs):
         fc_out = module.inception_fc(
             layer_dict=self.layers, n_class=self.n_class, keep_prob=self.keep_prob,
             inputs=inputs, pretrained_dict=None,
-            bn=self._bn, init_w=INIT_W, trainable=self._trainable,
+            bn=self._bn, init_w=INIT_W, trainable=self._fc_trainable,
             is_training=self.is_training, wd=self._wd)
         return fc_out
+
+    def _conv_layers(self, inputs):
+        conv_out = module.inception_conv_layers_cifar(
+            layer_dict=self.layers, inputs=inputs,
+            pretrained_dict=None,
+            bn=self._bn, wd=self._wd, init_w=INIT_W,
+            is_training=self.is_training, trainable=self._conv_trainable,
+            conv_stride=1)
+        return conv_out
+

@@ -12,13 +12,12 @@ import tensorflow as tf
 
 sys.path.append('../')
 import loader as loader
-from src.nets.googlenet import GoogleNet_cifar
+from src.nets.googlenet import GoogLeNet_cifar
 from src.helper.trainer import Trainer
 from src.helper.evaluator import Evaluator
 
 
 DATA_PATH = '/home/qge2/workspace/data/dataset/cifar/'
-# DATA_PATH = '/Users/gq/workspace/Dataset/cifar-10-batches-py/'
 SAVE_PATH = '/home/qge2/workspace/data/out/googlenet/cifar/'
 PRETRINED_PATH = '/home/qge2/workspace/data/pretrain/inception/googlenet.npy'
 
@@ -31,7 +30,7 @@ def get_args():
                         help='Evaluate the model')
     parser.add_argument('--finetune', action='store_true',
                         help='Fine tuning the model')
-    parser.add_argument('--load', type=int, default=104,
+    parser.add_argument('--load', type=int, default=99,
                         help='Epoch id of pre-trained model')
 
     parser.add_argument('--lr', type=float, default=1e-3,
@@ -47,21 +46,28 @@ def get_args():
 
 def train():
     FLAGS = get_args()
+    # Create Dataflow object for training and testing set
     train_data, valid_data = loader.load_cifar(
-        cifar_path=DATA_PATH, batch_size=FLAGS.bsize, substract_mean=True)
+        cifar_path=DATA_PATH, batch_size=FLAGS.bsize, subtract_mean=True)
 
     pre_trained_path=None
     if FLAGS.finetune:
+        # Load the pre-trained model (on ImageNet)
+        # for convolutional layers if fine tuning
         pre_trained_path = PRETRINED_PATH
-    train_model = GoogleNet_cifar(
-        n_channel=3, n_class=10, pre_trained_path=pre_trained_path,
-        bn=True, wd=0, trainable=True, sub_imagenet_mean=False)
-    train_model.create_train_model()
 
-    valid_model = GoogleNet_cifar(
+    # Create a training model
+    train_model = GoogLeNet_cifar(
+        n_channel=3, n_class=10, pre_trained_path=pre_trained_path,
+        bn=True, wd=0, sub_imagenet_mean=False,
+        conv_trainable=True, fc_trainable=True)
+    train_model.create_train_model()
+    # Create a validation model
+    valid_model = GoogLeNet_cifar(
         n_channel=3, n_class=10, bn=True, sub_imagenet_mean=False)
     valid_model.create_test_model()
 
+    # create a Trainer object for training control
     trainer = Trainer(train_model, valid_model, train_data, init_lr=FLAGS.lr)
 
     with tf.Session() as sess:
@@ -70,25 +76,31 @@ def train():
         sess.run(tf.global_variables_initializer())
         writer.add_graph(sess.graph)
         for epoch_id in range(FLAGS.maxepoch):
+            # train one epoch
             trainer.train_epoch(sess, keep_prob=FLAGS.keep_prob, summary_writer=writer)
+            # test the model on validation set after each epoch
             trainer.valid_epoch(sess, dataflow=valid_data, summary_writer=writer)
-        #     saver.save(sess, '{}inception-cifar-epoch-{}'.format(SAVE_PATH, epoch_id))
-        # saver.save(sess, '{}inception-cifar-epoch-{}'.format(SAVE_PATH, epoch_id))
+            saver.save(sess, '{}inception-cifar-epoch-{}'.format(SAVE_PATH, epoch_id))
+        saver.save(sess, '{}inception-cifar-epoch-{}'.format(SAVE_PATH, epoch_id))
+        writer.close()
 
 def evaluate():
     FLAGS = get_args()
+    # Create Dataflow object for training and testing set
     train_data, valid_data = loader.load_cifar(
-        cifar_path=DATA_PATH, batch_size=FLAGS.bsize, substract_mean=True)
-
-    valid_model = GoogleNet(
+        cifar_path=DATA_PATH, batch_size=FLAGS.bsize, subtract_mean=True)
+    # Create a validation model
+    valid_model = GoogLeNet_cifar(
         n_channel=3, n_class=10, bn=True, sub_imagenet_mean=False)
     valid_model.create_test_model()
 
+    # create a Evaluator object for evaluation
     evaluator = Evaluator(valid_model)
 
     with tf.Session() as sess:
         saver = tf.train.Saver()
         sess.run(tf.global_variables_initializer())
+        # load pre-trained model cifar
         saver.restore(sess, '{}inception-cifar-epoch-{}'.format(SAVE_PATH, FLAGS.load))
         print('training set:', end='')
         evaluator.accuracy(sess, train_data)

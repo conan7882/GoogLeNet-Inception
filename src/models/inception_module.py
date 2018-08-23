@@ -69,7 +69,8 @@ def inception_layer(conv_11_size, conv_33_reduce_size, conv_33_size,
 
 def inception_conv_layers(layer_dict, inputs=None, pretrained_dict=None,
                           bn=False, wd=0, init_w=None,
-                          is_training=True, trainable=True):
+                          is_training=True, trainable=True,
+                          conv_stride=2):
     if inputs is None:
         inputs = layer_dict['cur_input']
     layer_dict['cur_input'] = inputs
@@ -79,7 +80,7 @@ def inception_conv_layers(layer_dict, inputs=None, pretrained_dict=None,
                    bn=bn, nl=tf.nn.relu, init_w=init_w, trainable=trainable,
                    is_training=is_training, wd=wd, add_summary=False):
 
-        conv1 = L.conv(7, 64, inputs=inputs, name='conv1_7x7_s2', stride=2)
+        conv1 = L.conv(7, 64, inputs=inputs, name='conv1_7x7_s2', stride=conv_stride)
         padding1 = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]])
         conv1_pad = tf.pad(conv1, padding1, 'CONSTANT')
         pool1, _ = L.max_pool(
@@ -142,35 +143,60 @@ def inception_fc(layer_dict, n_class, keep_prob=1., inputs=None,
     L.drop_out(layer_dict, is_training, keep_prob=keep_prob)
     L.conv(filter_size=1, out_dim=n_class, layer_dict=layer_dict,
            pretrained_dict=pretrained_dict, trainable=trainable,
-           bn=bn, init_w=init_w, wd=wd, is_training=is_training,
+           bn=False, init_w=init_w, wd=wd, is_training=is_training,
            name='loss3_classifier')
     layer_dict['cur_input'] = tf.squeeze(layer_dict['cur_input'], [1, 2])
 
     return layer_dict['cur_input']
 
+def inception_conv_layers_cifar(layer_dict, inputs=None, pretrained_dict=None,
+                                bn=False, wd=0, init_w=None,
+                                is_training=True, trainable=True,
+                                conv_stride=2):
+    if inputs is None:
+        inputs = layer_dict['cur_input']
+    layer_dict['cur_input'] = inputs
+    
+    arg_scope = tf.contrib.framework.arg_scope
+    with arg_scope([L.conv], layer_dict=layer_dict, pretrained_dict=pretrained_dict,
+                   bn=bn, nl=tf.nn.relu, init_w=init_w, trainable=trainable,
+                   is_training=is_training, wd=wd, add_summary=False):
+
+        L.conv(7, 64, name='conv1_7x7_s2', stride=conv_stride)
+        # L.max_pool(layer_dict=layer_dict, stride=2,
+        #            filter_size=3, padding='VALID', name='pool1')
+
+        L.conv(1, 64, name='conv2_3x3_reduce')
+        L.conv(3, 192, name='conv2_3x3')
+        # L.max_pool(layer_dict=layer_dict, stride=2,
+        #            filter_size=3, padding='VALID', name='pool2')
+
+    return layer_dict['cur_input']
+
 def auxiliary_classifier(layer_dict, n_class, keep_prob=1., inputs=None,
-                         pretrained_dict=None, is_training=True,
-                         bn=False, init_w=None, trainable=True, wd=0):
+                               pretrained_dict=None, is_training=True,
+                               bn=False, init_w=None, trainable=True, wd=0):
     
     if inputs is not None:
         layer_dict['cur_input'] = inputs
 
-    layer_dict['cur_input'] = tf.layers.average_pooling2d(
-        inputs=layer_dict['cur_input'],
-        pool_size=5, strides=3,
-        padding='valid', name='averagepool')
+    # layer_dict['cur_input'] = tf.layers.average_pooling2d(
+    #     inputs=layer_dict['cur_input'],
+    #     pool_size=5, strides=3,
+    #     padding='valid', name='averagepool')
+    layer_dict['cur_input'] = L.global_avg_pool(layer_dict['cur_input'], keepdims=True)
 
     arg_scope = tf.contrib.framework.arg_scope
-    with arg_scope([L.conv], layer_dict=layer_dict, pretrained_dict=pretrained_dict,
+    with arg_scope([L.conv, L.linear], layer_dict=layer_dict,
                    bn=bn, init_w=init_w, trainable=trainable,
                    is_training=is_training, wd=wd, add_summary=False):
 
         L.conv(1, 128, name='conv', stride=1, nl=tf.nn.relu)
-        L.conv(4, 1024, name='fc_1', stride=1, padding='VALID')
+        L.linear(out_dim=512, name='fc_1', nl=tf.nn.relu)
         L.drop_out(layer_dict, is_training, keep_prob=keep_prob)
-        L.conv(1, 1024, name='fc_2', stride=1, padding='VALID', nl=tf.nn.relu)
+        L.linear(out_dim=512, name='fc_2', nl=tf.nn.relu)
         L.drop_out(layer_dict, is_training, keep_prob=keep_prob)
-        L.conv(1, n_class, name='classifier', stride=1, padding='VALID')
-        layer_dict['cur_input'] = tf.squeeze(layer_dict['cur_input'], [1, 2])
+        L.linear(out_dim=n_class, name='classifier', bn=False)
+
     return layer_dict['cur_input']
 
