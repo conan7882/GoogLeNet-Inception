@@ -1,6 +1,8 @@
 # GoogLeNet for Image Classification
 
 - TensorFlow implementation of [Going Deeper with Convolutions](https://research.google.com/pubs/pub43022.html) (CVPR'15). 
+- **The inception structure**
+ - This repository contains the examples of natural image classification using pre-trained model as well as training a Inception network from scratch on [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html) dataset (93.64% accuracy on testing set). The pre-trained model on CIFAR-10 can be download from [here](https://www.dropbox.com/sh/kab0bzpy0zymljx/AAD2YCVm0J1Qmlor8EoPzgQda?dl=0).
 - Architecture of GoogLeNet from the paper:
 ![googlenet](fig/arch.png)
 
@@ -15,7 +17,21 @@
 - The GoogLeNet model is defined in [`src/nets/googlenet.py`](src/nets/googlenet.py).
 - Inception module is defined in [`src/models/inception_module.py`](src/models/inception_module.py).
 - An example of image classification using pre-trained model is in [`examples/inception_pretrained.py`](examples/inception_pretrained.py).
-- When testing the pre-trained model, images are rescaled so that the shorter dimension is 224. This is not the same as the original paper which is an ensemle of 7 similar models using 144 224x224 crops per image for testing. So the performance will not be as good as the original paper. 
+- An example of train a network from scratch on CIFAR-10 is in [`examples/inception_cifar.py`](examples/inception_cifar.py).
+
+For testing the pre-trained model
+- Images are rescaled so that the smallest side equals 224 before fed into the model. This is not the same as the original paper which is an ensemle of 7 similar models using 144 224x224 crops per image for testing. So the performance will not be as good as the original paper. 
+- **LRN**
+
+For training from scratch on CIFAR-10
+- All the LRN layers are removed from the convolutional layers.
+- [Batch normalization](https://arxiv.org/abs/1502.03167) and ReLU activation are used in all the convolutional layers including the layers in Inception structure except the output layer.
+- Two auxiliary classifiers are used as mentioned in the paper, though 512 instead of 1024 hidden units are used in the two fully connected layers to reduce the computation. However, I found the results are almost the same on CIFAR-10 with and without auxiliary classifiers.
+- Since the 32 x 32 images are downsampled to 1 x 1 before fed into `inception_5a`, this makes the multi-scale structure of inception layers unuseful and harm the performance (around **80%** accuarcy). To make full use of the multi-scale structures, the stride of the first convolutional layer is reduced to 1 and the first two max pooling layers are removed. The the feature map (32 x 32 x channels) will have almost the same size as described in table 1 (28 x 28 x channel) in the paper before fed into `inception_3a`. I have also tried only reduce the stride or only remove one max pooling layer. But I found the current setting provides the best performance on the testing set.
+- During training, dropout with keep probability 0.4 is applied to two fully connected layers and weight decay with 5e-4 is used as well.
+- The network is trained through Adam optimizer. Batch size is 128. The initial learning rate is 1e-3, decays to 1e-4 after 30 epochs, and finally decays to 1e-5 after 50 epochs. 
+- Each color channel of the input images are subtracted by the mean value computed from the training set.
+
 
 ## Usage
 ### ImageNet Classification
