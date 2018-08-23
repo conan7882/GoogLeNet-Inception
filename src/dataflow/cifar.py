@@ -18,11 +18,11 @@ class CIFAR(DataFlow):
                  batch_dict_name=None,
                  data_type='train',
                  channel_mean=None,
-                 substract_mean=True,
+                 subtract_mean=True,
                  pf=None,
                  augment=False):
         self._mean = channel_mean
-        self._substract = substract_mean
+        self._subtract = subtract_mean
         self._pf = pf
 
         self._augment = augment
@@ -115,7 +115,7 @@ class CIFAR(DataFlow):
             self._mean = self._comp_channel_mean()
         return self._mean
 
-    def substract_channel_mean(self, im_list):
+    def subtract_channel_mean(self, im_list):
         """
         Args:
             im_list: [batch, h, w, c]
@@ -167,8 +167,8 @@ class CIFAR(DataFlow):
         if self._augment:
             self._augment_flow.fit(batch_image)
             batch_image, batch_label = self._augment_flow.flow(batch_image, batch_label, batch_size=self._batch_size)[0]
-        if self._substract:
-            batch_image = self.substract_channel_mean(batch_image)
+        if self._subtract:
+            batch_image = self.subtract_channel_mean(batch_image)
         # batch_image = batch_image.astype('float32')
         # batch_image = batch_image / 255. * 2. - 1.
         return batch_image.astype('float32'), batch_label

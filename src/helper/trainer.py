@@ -50,9 +50,9 @@ class Trainer(object):
         self.epoch_id = 0
 
     def train_epoch(self, sess, keep_prob=1., summary_writer=None):
-        if self.epoch_id < 50:
+        if self.epoch_id < 35:
             self._lr = self._init_lr
-        elif self.epoch_id < 70:
+        elif self.epoch_id < 50:
             self._lr = self._init_lr / 10.
         else:
             self._lr = self._init_lr / 100.
