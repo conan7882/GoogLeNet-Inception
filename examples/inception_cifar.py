@@ -21,6 +21,7 @@ DATA_PATH = '/home/qge2/workspace/data/dataset/cifar/'
 SAVE_PATH = '/home/qge2/workspace/data/out/googlenet/cifar/'
 PRETRINED_PATH = '/home/qge2/workspace/data/pretrain/inception/googlenet.npy'
 
+
 def get_args():
     parser = argparse.ArgumentParser()
 
