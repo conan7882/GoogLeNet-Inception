@@ -34,18 +34,6 @@ For training from scratch on CIFAR-10
 
 
 ## Usage
-<<<<<<< HEAD
-### Download pre-trained model
-Download the pre-trained parameters [here](https://www.dropbox.com/sh/axnbpd1oe92aoyd/AADpmuFIJTtxS7zkL_LZrROLa?dl=0). This is original from [here](http://www.deeplearningmodel.net/).
-### Config path
-All directories are setup in [`example/setup_env.py`](example/setup_env.py).
-
-- `PARA_DIR` is the path of the pre-trained model.
-- `SAVE_DIR` is the directory to save graph summary for tensorboard. 
-- `DATA_DIR` is the directory to put testing images.
-
-=======
->>>>>>> 8b3f57700b6e08b9a2b11efc032ce65e195605da
 ### ImageNet Classification
 #### Preparation
 - Download the pre-trained parameters [here](https://www.dropbox.com/sh/axnbpd1oe92aoyd/AADpmuFIJTtxS7zkL_LZrROLa?dl=0). This is original from [here](http://www.deeplearningmodel.net/).

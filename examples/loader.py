@@ -12,20 +12,29 @@ sys.path.append('../')
 from src.dataflow.images import Image
 from src.dataflow.cifar import CIFAR 
 
-def load_label_dict():
+def load_label_dict(dataset='imagenet'):
     """ 
         Function to read the ImageNet label file.
         Used for testing the pre-trained model.
+
+        dataset (str): name of data set. 'imagenet', 'cifar'
     """
     label_dict = {}
-    with open('../data/imageNetLabel.txt', 'r') as f:
+    if dataset == 'cifar':
+        file_path = '../data/cifarLabel.txt'
+    else:
+        file_path = '../data/imageNetLabel.txt'
+    with open(file_path, 'r') as f:
         for idx, line in enumerate(f):
-            # point to the class label string
-            names = line.rstrip()[10:]
+            if dataset == 'cifar':
+                names = line.rstrip()
+            else:
+                # point to the class label string
+                names = line.rstrip()[10:]
             label_dict[idx] = names
     return label_dict
 
-def read_image(im_name, n_channel, data_dir='', batch_size=1):
+def read_image(im_name, n_channel, data_dir='', batch_size=1, rescale=True):
     """ function for create a Dataflow for reading images from a folder
         This function returns a Dataflow object for images with file 
         name containing 'im_name' in directory 'data_dir'.
@@ -35,6 +44,7 @@ def read_image(im_name, n_channel, data_dir='', batch_size=1):
             n_channel (int): number of channels (3 for color images and 1 for grayscale images)
             data_dir (str): directory of images
             batch_size (int): number of images read from Dataflow for each batch
+            rescale (bool): whether rescale image to 224 or not
 
         Returns:
             Image (object): batch images can be access by Image.next_batch_dict()['image']
@@ -56,13 +66,18 @@ def read_image(im_name, n_channel, data_dir='', batch_size=1):
                                           preserve_range=True)
         return im.astype('uint8')
 
+    if rescale:
+        pf_fnc = rescale_im
+    else:
+        pf_fnc = None
+
     image_data = Image(
         im_name=im_name,
         data_dir=data_dir,
         n_channel=n_channel,
         shuffle=False,
         batch_dict_name=['image'],
-        pf_list=rescale_im)
+        pf_list=pf_fnc)
     image_data.setup(epoch_val=0, batch_size=batch_size)
 
     return image_data
