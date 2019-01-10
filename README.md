@@ -43,7 +43,7 @@ For training from scratch on CIFAR-10
 Go to `examples/` and put test image in folder `DATA_PATH`, then run the script:
 
 ```
-python inception_pretrained.py --im_name PART-OF-IMAGE-NAME
+python inception_pretrained.py --im_name PART_OF_IMAGE_NAME
 ```
 - `--im_name` is the option for image names you want to test. If the testing images are all `png` files, this can be `png`. The default setting is `.jpg`.
 - The output will be the top-5 class labels and probabilities.
@@ -56,8 +56,11 @@ python inception_pretrained.py --im_name PART-OF-IMAGE-NAME
 Go to `examples/` and run the script:
 
 ```
-python inception_cifar.py --train --lr LEARNING-RATE --bsize BATCH-SIZE --keep_prob KEEP-PROB-OF-DROPOUT
---maxepoch MAX-TRAINING-EPOCH
+python inception_cifar.py --train \
+  --lr LEARNING_RATE \
+  --bsize BATCH_SIZE \
+  --keep_prob KEEP_PROB_OF_DROPOUT \
+  --maxepoch MAX_TRAINING_EPOCH
 ```
 - Summary and model will be saved in `SAVE_PATH`. One pre-trained model on CIFAR-10  can be downloaded from [here](https://www.dropbox.com/sh/kab0bzpy0zymljx/AAD2YCVm0J1Qmlor8EoPzgQda?dl=0).
 
@@ -65,7 +68,8 @@ python inception_cifar.py --train --lr LEARNING-RATE --bsize BATCH-SIZE --keep_p
 Go to `examples/` and put the pre-trained model in `SAVE_PATH`. Then run the script:
 
 ```
-python inception_cifar.py --eval --load PRE-TRAINED-MODEL-ID
+python inception_cifar.py --eval \
+  --load PRE_TRAINED_MODEL_ID
 ```
 - The pre-trained ID is epoch ID shown in the save modeled file name. The default value is `99`, which indicates the one I uploaded. 
 - The output will be the accuracy of training and testing set.
