@@ -9,6 +9,24 @@ import tensorflow as tf
 from tensorflow.contrib.framework import add_arg_scope
 
 
+def _get_variable(shape, initializer, regularizer, trainable, name, device=None):
+    if device is None:
+        var = tf.get_variable(
+            name=name,
+            shape=shape,
+            initializer=initializer,
+            regularizer=regularizer,
+            trainable=trainable)
+    else:
+        with tf.device(device):
+            var = tf.get_variable(
+                name=name,
+                shape=shape,
+                initializer=initializer,
+                regularizer=regularizer,
+                trainable=trainable)
+    return var 
+
 def get_shape4D(in_val):
     """
     Return a 4D shape
@@ -110,7 +128,8 @@ def linear(out_dim,
            trainable=True,
            name='Linear',
            nl=tf.identity,
-           add_summary=False):
+           add_summary=False,
+           device=None):
     with tf.variable_scope(name):
         if inputs is None:
             assert layer_dict is not None
@@ -121,18 +140,34 @@ def linear(out_dim,
             regularizer = tf.contrib.layers.l2_regularizer(scale=wd)
         else:
             regularizer=None
-        weights = tf.get_variable('weights',
-                                  shape=[in_dim, out_dim],
-                                  # dtype=None,
-                                  initializer=init_w,
-                                  regularizer=regularizer,
-                                  trainable=trainable)
-        biases = tf.get_variable('biases',
-                                  shape=[out_dim],
-                                  # dtype=None,
-                                  initializer=init_b,
-                                  regularizer=None,
-                                  trainable=trainable)
+
+        weights = _get_variable(
+            shape=[in_dim, out_dim],
+            initializer=init_w,
+            regularizer=regularizer,
+            trainable=trainable,
+            name='weights',
+            device=device)
+
+        biases = _get_variable(
+            shape=[out_dim],
+            initializer=init_b,
+            regularizer=None,
+            trainable=trainable,
+            name='biases',
+            device=device)
+        # weights = tf.get_variable('weights',
+        #                           shape=[in_dim, out_dim],
+        #                           # dtype=None,
+        #                           initializer=init_w,
+        #                           regularizer=regularizer,
+        #                           trainable=trainable)
+        # biases = tf.get_variable('biases',
+        #                           shape=[out_dim],
+        #                           # dtype=None,
+        #                           initializer=init_b,
+        #                           regularizer=None,
+        #                           trainable=trainable)
 
         if add_summary:
             tf.summary.histogram(
@@ -168,7 +203,8 @@ def transpose_conv(
                    is_training=True,
                    constant_init=False,
                    name='dconv',
-                   add_summary=False):
+                   add_summary=False,
+                   device=None):
     if inputs is None:
         inputs = layer_dict['cur_input']
     stride = get_shape4D(stride)
@@ -192,15 +228,32 @@ def transpose_conv(
             regularizer = tf.contrib.layers.l2_regularizer(scale=wd)
         else:
             regularizer=None
-        weights = tf.get_variable('weights',
-                                  filter_shape,
-                                  initializer=init_w,
-                                  trainable=trainable,
-                                  regularizer=regularizer)
-        biases = tf.get_variable('biases',
-                                 [out_dim],
-                                 initializer=init_b,
-                                 trainable=trainable)
+
+        weights = _get_variable(
+            shape=filter_shape,
+            initializer=init_w,
+            regularizer=regularizer,
+            trainable=trainable,
+            name='weights',
+            device=device)
+
+        biases = _get_variable(
+            shape=[out_dim],
+            initializer=init_b,
+            regularizer=None,
+            trainable=trainable,
+            name='biases',
+            device=device)
+
+        # weights = tf.get_variable('weights',
+        #                           filter_shape,
+        #                           initializer=init_w,
+        #                           trainable=trainable,
+        #                           regularizer=regularizer)
+        # biases = tf.get_variable('biases',
+        #                          [out_dim],
+        #                          initializer=init_b,
+        #                          trainable=trainable)
         
         output = tf.nn.conv2d_transpose(inputs,
                                         weights, 
@@ -285,7 +338,9 @@ def conv(filter_size,
          is_training=None,
          wd=0,
          name='conv',
-         add_summary=False):
+         add_summary=False,
+         device=None):
+
     if inputs is None:
         inputs = layer_dict['cur_input']
     stride = get_shape4D(stride)
@@ -317,11 +372,19 @@ def conv(filter_size,
             load_w = np.reshape(load_w, filter_shape)
             init_w = tf.constant_initializer(load_w)
 
-        weights = tf.get_variable('weights',
-                                  filter_shape,
-                                  initializer=init_w,
-                                  trainable=trainable,
-                                  regularizer=regularizer)
+        weights = _get_variable(
+            shape=filter_shape,
+            initializer=init_w,
+            regularizer=regularizer,
+            trainable=trainable,
+            name='weights',
+            device=device)
+
+        # weights = tf.get_variable('weights',
+        #                           filter_shape,
+        #                           initializer=init_w,
+        #                           trainable=trainable,
+        #                           regularizer=regularizer)
         if add_summary:
             tf.summary.histogram(
                 'weights/{}'.format(name), weights, collections = ['train'])
@@ -346,10 +409,19 @@ def conv(filter_size,
                 load_b = np.reshape(load_b, [out_dim])
                 init_b = tf.constant_initializer(load_b)
 
-            biases = tf.get_variable('biases',
-                                 [out_dim],
-                                 initializer=init_b,
-                                 trainable=trainable)
+            biases = _get_variable(
+                shape=[out_dim],
+                initializer=init_b,
+                regularizer=None,
+                trainable=trainable,
+                name='biases',
+                device=device)
+
+            # biases = tf.get_variable('biases',
+            #                      [out_dim],
+            #                      initializer=init_b,
+            #                      trainable=trainable)
+
             outputs += biases
 
         if bn is True:
@@ -363,7 +435,7 @@ def drop_out(layer_dict, is_training, inputs=None, keep_prob=0.5):
     if inputs is None:
         inputs = layer_dict['cur_input']
     if is_training:
-        layer_dict['cur_input'] = tf.nn.dropout(inputs, keep_prob=keep_prob)
+        layer_dict['cur_input'] = tf.nn.dropout(inputs, rate=1 - keep_prob)
     else:
         layer_dict['cur_input'] = inputs
     return layer_dict['cur_input']

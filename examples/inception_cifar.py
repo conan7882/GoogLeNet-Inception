@@ -17,9 +17,14 @@ from src.helper.trainer import Trainer
 from src.helper.evaluator import Evaluator
 
 
-DATA_PATH = '/home/qge2/workspace/data/dataset/cifar/'
-SAVE_PATH = '/home/qge2/workspace/data/out/googlenet/cifar/'
-PRETRINED_PATH = '/home/qge2/workspace/data/pretrain/inception/googlenet.npy'
+# DATA_PATH = '/home/qge2/workspace/data/dataset/cifar/'
+# SAVE_PATH = '/home/qge2/workspace/data/out/googlenet/cifar/'
+# PRETRINED_PATH = '/home/qge2/workspace/data/pretrain/inception/googlenet.npy'
+# IM_PATH = '../data/cifar/'
+
+DATA_PATH = '/home/qge2/dataset/cifar/'
+SAVE_PATH = '/home/qge2/output/googlenet/cifar/'
+PRETRINED_PATH = '/home/qge2/pretrained/inception/googlenet.npy'
 IM_PATH = '../data/cifar/'
 
 
@@ -67,28 +72,44 @@ def train():
     train_model = GoogLeNet_cifar(
         n_channel=3, n_class=10, pre_trained_path=pre_trained_path,
         bn=True, wd=0, sub_imagenet_mean=False,
-        conv_trainable=True, fc_trainable=True)
-    train_model.create_train_model()
+        conv_trainable=True, fc_trainable=True, var_device='/cpu:0')
+    train_model.create_train_model(gpu_list=[0, 1])
+        # trainer = Trainer(train_model, valid_model, train_data, init_lr=FLAGS.lr)
     # Create a validation model
-    valid_model = GoogLeNet_cifar(
-        n_channel=3, n_class=10, bn=True, sub_imagenet_mean=False)
-    valid_model.create_test_model()
+    # with tf.device('/gpu:0'):
+    # valid_model = GoogLeNet_cifar(
+    #     n_channel=3, n_class=10, bn=True, sub_imagenet_mean=False)
+    # valid_model.create_test_model()
 
     # create a Trainer object for training control
-    trainer = Trainer(train_model, valid_model, train_data, init_lr=FLAGS.lr)
+    
 
-    with tf.Session() as sess:
+    sessconfig = tf.ConfigProto(log_device_placement=True, allow_soft_placement=True)
+    sessconfig.gpu_options.allow_growth = True
+    with tf.Session(config=sessconfig) as sess:
         writer = tf.summary.FileWriter(SAVE_PATH)
-        saver = tf.train.Saver()
+        # saver = tf.train.Saver()
         sess.run(tf.global_variables_initializer())
         writer.add_graph(sess.graph)
         for epoch_id in range(FLAGS.maxepoch):
             # train one epoch
-            trainer.train_epoch(sess, keep_prob=FLAGS.keep_prob, summary_writer=writer)
+            # trainer.train_epoch(sess, keep_prob=FLAGS.keep_prob, summary_writer=writer)
+            train_model.train_epoch(
+                sess,
+                init_lr=FLAGS.lr,
+                train_data=train_data,
+                keep_prob=FLAGS.keep_prob,
+                summary_writer=writer)
+
+            # valid_model.valid_epoch(
+            #     sess, 
+            #     dataflow=valid_data, 
+            #     summary_writer=writer)
+
             # test the model on validation set after each epoch
-            trainer.valid_epoch(sess, dataflow=valid_data, summary_writer=writer)
-            saver.save(sess, '{}inception-cifar-epoch-{}'.format(SAVE_PATH, epoch_id))
-        saver.save(sess, '{}inception-cifar-epoch-{}'.format(SAVE_PATH, epoch_id))
+            # trainer.valid_epoch(sess, dataflow=valid_data, summary_writer=writer)
+        #     saver.save(sess, '{}inception-cifar-epoch-{}'.format(SAVE_PATH, epoch_id))
+        # saver.save(sess, '{}inception-cifar-epoch-{}'.format(SAVE_PATH, epoch_id))
         writer.close()
 
 def evaluate():
