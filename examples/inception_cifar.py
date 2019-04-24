@@ -13,7 +13,7 @@ import tensorflow as tf
 sys.path.append('../')
 import loader as loader
 from src.nets.googlenet import GoogLeNet_cifar
-from src.helper.trainer import Trainer
+# from src.helper.trainer import Trainer
 from src.helper.evaluator import Evaluator
 
 
@@ -56,10 +56,14 @@ def get_args():
 
     return parser.parse_args()
 
+
 def train():
     FLAGS = get_args()
     # Create Dataflow object for training and testing set
-    train_data, valid_data = loader.load_cifar(
+    # train_data, valid_data = loader.load_cifar(
+    #     cifar_path=DATA_PATH, batch_size=FLAGS.bsize, subtract_mean=True)
+
+    train_data = loader.load_cifar_generator(
         cifar_path=DATA_PATH, batch_size=FLAGS.bsize, subtract_mean=True)
 
     pre_trained_path=None
@@ -72,8 +76,8 @@ def train():
     train_model = GoogLeNet_cifar(
         n_channel=3, n_class=10, pre_trained_path=pre_trained_path,
         bn=True, wd=0, sub_imagenet_mean=False,
-        conv_trainable=True, fc_trainable=True, var_device='/cpu:0')
-    train_model.create_train_model(gpu_list=[0, 1])
+        conv_trainable=True, fc_trainable=True)
+    train_model.create_train_model(dataset_iter=train_data.iter, devices=['/device:GPU:0'], controller='/gpu:0')
         # trainer = Trainer(train_model, valid_model, train_data, init_lr=FLAGS.lr)
     # Create a validation model
     # with tf.device('/gpu:0'):
@@ -90,14 +94,15 @@ def train():
         writer = tf.summary.FileWriter(SAVE_PATH)
         # saver = tf.train.Saver()
         sess.run(tf.global_variables_initializer())
+        
+
         writer.add_graph(sess.graph)
         for epoch_id in range(FLAGS.maxepoch):
             # train one epoch
-            # trainer.train_epoch(sess, keep_prob=FLAGS.keep_prob, summary_writer=writer)
+            train_data.init_iterator(sess)
             train_model.train_epoch(
                 sess,
                 init_lr=FLAGS.lr,
-                train_data=train_data,
                 keep_prob=FLAGS.keep_prob,
                 summary_writer=writer)
 

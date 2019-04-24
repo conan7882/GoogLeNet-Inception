@@ -11,6 +11,32 @@ import skimage.transform
 sys.path.append('../')
 from src.dataflow.images import Image
 from src.dataflow.cifar import CIFAR 
+import src.dataflow.generator as generator
+
+def load_cifar_generator(cifar_path, batch_size=64, subtract_mean=True):
+
+    train_data = CIFAR(
+        data_dir=cifar_path,
+        shuffle=True,
+        batch_dict_name=['image', 'label'],
+        data_type='train',
+        channel_mean=None,
+        subtract_mean=subtract_mean,
+        augment=False,
+        )
+
+    output_types = (tf.float32, tf.int64)
+    output_shapes = (tf.TensorShape([32, 32, 3]), tf.TensorShape([1]))
+
+    train_generator = generator.Generator(
+        data_generator=train_data.sample_generator,
+        output_types=output_types,
+        output_shapes=output_shapes,
+        batch_size=batch_size,
+        buffer_size=4,
+        num_parallel_preprocess=2)
+
+    return train_generator
 
 def load_label_dict(dataset='imagenet'):
     """ 

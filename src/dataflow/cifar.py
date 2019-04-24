@@ -122,7 +122,7 @@ class CIFAR(DataFlow):
         """
         mean = self.channel_mean
         for c_id in range(0, im_list.shape[-1]):
-            im_list[:, :, :, c_id] = im_list[:, :, :, c_id] - mean[c_id]
+            im_list[..., c_id] = im_list[..., c_id] - mean[c_id]
         return im_list
 
     def _comp_channel_mean(self):
@@ -147,7 +147,21 @@ class CIFAR(DataFlow):
                 data_size += len(tmp_image)
             self.data_size = data_size
             return self.data_size
-        
+
+    def sample_generator(self):
+        if self.shuffle:
+            self._suffle_files()
+        cnt = 0
+        for image, label in zip(self._image, self._label):
+            image = image.astype('float32')
+            if self._subtract:
+                image = self.subtract_channel_mean(image)
+            cnt += 1
+            if cnt % 1000 == 0:
+                print(cnt)
+
+            yield image, [label]
+
     def next_batch(self):
         assert self._batch_size <= self.size(), \
           "batch_size {} cannot be larger than data size {}".\

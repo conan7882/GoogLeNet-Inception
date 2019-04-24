@@ -31,7 +31,7 @@ def inception_layer(conv_11_size, conv_33_reduce_size, conv_33_size,
                     layer_dict, inputs=None,
                     bn=False, wd=0, init_w=None,
                     pretrained_dict=None, trainable=True, is_training=True,
-                    name='inception', var_device=None):
+                    name='inception'):
     
     if inputs is None:
         inputs = layer_dict['cur_input']
@@ -40,7 +40,7 @@ def inception_layer(conv_11_size, conv_33_reduce_size, conv_33_size,
     arg_scope = tf.contrib.framework.arg_scope
     with arg_scope([L.conv], layer_dict=layer_dict, pretrained_dict=pretrained_dict,
                    bn=bn, nl=tf.nn.relu, init_w=init_w, trainable=trainable,
-                   is_training=is_training, wd=wd, add_summary=False, device=var_device):
+                   is_training=is_training, wd=wd, add_summary=False):
 
 
         conv_11 = L.conv(filter_size=1, out_dim=conv_11_size,
@@ -70,7 +70,7 @@ def inception_layer(conv_11_size, conv_33_reduce_size, conv_33_size,
 def inception_conv_layers(layer_dict, inputs=None, pretrained_dict=None,
                           bn=False, wd=0, init_w=None,
                           is_training=True, trainable=True,
-                          conv_stride=2, var_device=None):
+                          conv_stride=2):
     if inputs is None:
         inputs = layer_dict['cur_input']
     layer_dict['cur_input'] = inputs
@@ -78,7 +78,7 @@ def inception_conv_layers(layer_dict, inputs=None, pretrained_dict=None,
     arg_scope = tf.contrib.framework.arg_scope
     with arg_scope([L.conv], layer_dict=layer_dict, pretrained_dict=pretrained_dict,
                    bn=bn, nl=tf.nn.relu, init_w=init_w, trainable=trainable,
-                   is_training=is_training, wd=wd, add_summary=False, device=var_device):
+                   is_training=is_training, wd=wd, add_summary=False):
 
         conv1 = L.conv(7, 64, inputs=inputs, name='conv1_7x7_s2', stride=conv_stride)
         padding1 = tf.constant([[0, 0], [0, 1], [0, 1], [0, 0]])
@@ -105,7 +105,7 @@ def inception_conv_layers(layer_dict, inputs=None, pretrained_dict=None,
 
 def inception_layers(layer_dict, inputs=None, pretrained_dict=None,
                      bn=False, init_w=None, wd=0,
-                     trainable=True, is_training=True, var_device=None):
+                     trainable=True, is_training=True):
     if inputs is not None:
         layer_dict['cur_input'] = inputs
 
@@ -113,7 +113,7 @@ def inception_layers(layer_dict, inputs=None, pretrained_dict=None,
     with arg_scope([inception_layer], layer_dict=layer_dict,
                    pretrained_dict=pretrained_dict,
                    bn=bn, init_w=init_w, trainable=trainable,
-                   is_training=is_training, wd=wd, var_device=var_device):
+                   is_training=is_training, wd=wd):
 
         inception_layer(64, 96, 128, 16, 32, 32, name='inception_3a')
         inception_layer(128, 128, 192, 32, 96, 64, name='inception_3b')
@@ -133,7 +133,7 @@ def inception_layers(layer_dict, inputs=None, pretrained_dict=None,
 
 def inception_fc(layer_dict, n_class, keep_prob=1., inputs=None,
                  pretrained_dict=None, is_training=True,
-                 bn=False, init_w=None, trainable=True, wd=0, var_device=None):
+                 bn=False, init_w=None, trainable=True, wd=0):
 
     if inputs is not None:
         layer_dict['cur_input'] = inputs
@@ -144,7 +144,7 @@ def inception_fc(layer_dict, n_class, keep_prob=1., inputs=None,
     L.conv(filter_size=1, out_dim=n_class, layer_dict=layer_dict,
            pretrained_dict=pretrained_dict, trainable=trainable,
            bn=False, init_w=init_w, wd=wd, is_training=is_training,
-           name='loss3_classifier', device=var_device)
+           name='loss3_classifier')
     layer_dict['cur_input'] = tf.squeeze(layer_dict['cur_input'], [1, 2])
 
     return layer_dict['cur_input']
@@ -152,7 +152,7 @@ def inception_fc(layer_dict, n_class, keep_prob=1., inputs=None,
 def inception_conv_layers_cifar(layer_dict, inputs=None, pretrained_dict=None,
                                 bn=False, wd=0, init_w=None,
                                 is_training=True, trainable=True,
-                                conv_stride=2, var_device=None):
+                                conv_stride=2):
     if inputs is None:
         inputs = layer_dict['cur_input']
     layer_dict['cur_input'] = inputs
@@ -160,7 +160,7 @@ def inception_conv_layers_cifar(layer_dict, inputs=None, pretrained_dict=None,
     arg_scope = tf.contrib.framework.arg_scope
     with arg_scope([L.conv], layer_dict=layer_dict, pretrained_dict=pretrained_dict,
                    bn=bn, nl=tf.nn.relu, init_w=init_w, trainable=trainable,
-                   is_training=is_training, wd=wd, add_summary=False, device=var_device):
+                   is_training=is_training, wd=wd, add_summary=False):
 
         L.conv(7, 64, name='conv1_7x7_s2', stride=conv_stride)
         # L.max_pool(layer_dict=layer_dict, stride=2,
@@ -175,7 +175,7 @@ def inception_conv_layers_cifar(layer_dict, inputs=None, pretrained_dict=None,
 
 def auxiliary_classifier(layer_dict, n_class, keep_prob=1., inputs=None,
                                pretrained_dict=None, is_training=True,
-                               bn=False, init_w=None, trainable=True, wd=0, var_device=None):
+                               bn=False, init_w=None, trainable=True, wd=0):
     
     if inputs is not None:
         layer_dict['cur_input'] = inputs
@@ -189,7 +189,7 @@ def auxiliary_classifier(layer_dict, n_class, keep_prob=1., inputs=None,
     arg_scope = tf.contrib.framework.arg_scope
     with arg_scope([L.conv, L.linear], layer_dict=layer_dict,
                    bn=bn, init_w=init_w, trainable=trainable,
-                   is_training=is_training, wd=wd, add_summary=False, device=var_device):
+                   is_training=is_training, wd=wd, add_summary=False):
 
         L.conv(1, 128, name='conv', stride=1, nl=tf.nn.relu)
         L.linear(out_dim=512, name='fc_1', nl=tf.nn.relu)
