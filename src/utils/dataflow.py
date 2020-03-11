@@ -4,7 +4,7 @@
 # Author: Qian Ge <geqian1001@gmail.com>
 
 import os
-import scipy.misc
+import imageio
 import numpy as np
 from datetime import datetime
 
@@ -18,9 +18,9 @@ def load_image(im_path, read_channel=None, pf=identity):
     if read_channel is None:
         im = scipy.misc.imread(im_path)
     elif read_channel == 3:
-        im = scipy.misc.imread(im_path, mode='RGB')
+        im = imageio.imread(im_path, pilmode='RGB')
     else:
-        im = scipy.misc.imread(im_path, flatten=True)
+        im = imageio.imread(im_path, flatten=True)
 
     if len(im.shape) < 3:
         im = pf(im)

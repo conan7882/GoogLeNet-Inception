@@ -30,7 +30,7 @@ class GoogLeNet(BaseModel):
         self._pretrained_dict = None
         if pre_trained_path:
             self._pretrained_dict = np.load(
-                pre_trained_path, encoding='latin1').item()
+                pre_trained_path, encoding='latin1', allow_pickle=True).item()
 
         self.layers = {}
 
